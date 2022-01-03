@@ -27,26 +27,26 @@ def geturl():
     print(url)
     return url
 
-def getsubjectPopUp(url,subject):
-    # mainpage
-    r = requests.get(url)
-    wosid = url.split('/')[-2]
-    bs = BeautifulSoup(r.text, 'lxml')
-    options = bs.find_all('option')
-    for option in options:
-        if subject.lower() in option.text.lower():
-            subjectPopUp = int(option['value'])
-            print(subjectPopUp)
-            return subjectPopUp
-    return None
+# def getsubjectPopUp(url,subject):
+#     # mainpage
+#     r = requests.get(url)
+#     wosid = url.split('/')[-2]
+#     bs = BeautifulSoup(r.text, 'lxml')
+#     options = bs.find_all('option')
+#     for option in options:
+#         if subject.lower() in option.text.lower():
+#             subjectPopUp = int(option['value'])
+#             print(subjectPopUp)
+#             return subjectPopUp
+#     return None
 
-def getpage(url,subject):
-    subjectPopUp = getsubjectPopUp(url,subject)
+def getpage(url, subject):
+    # subjectPopUp = getsubjectPopUp(url)
     wosid = url.split('/')[-2]
     params={
     'sessionPopUp': 0,
     # 0-207 subjects, 64 is EECS
-    'subjectPopUp': subjectPopUp,
+    'subjectPopUp': subject,
     '3.10.7.5': 'Search Courses',
     'wosid': wosid
     }
@@ -55,6 +55,21 @@ def getpage(url,subject):
     soup = BeautifulSoup(req.text,'lxml')
     print(wosid)
     return soup
+# def getpage(url,subject):
+#     subjectPopUp = getsubjectPopUp(url,subject)
+#     wosid = url.split('/')[-2]
+#     params={
+#     'sessionPopUp': 0,
+#     # 0-207 subjects, 64 is EECS
+#     'subjectPopUp': subjectPopUp,
+#     '3.10.7.5': 'Search Courses',
+#     'wosid': wosid
+#     }
+#     req = requests.post(url,data=params)
+#
+#     soup = BeautifulSoup(req.text,'lxml')
+#     print(wosid)
+#     return soup
 def scrapeSubject(url,subject):
     soup = getpage(url,subject)
     sub = soup.find('td',{'width':'16%'}).text
@@ -67,10 +82,15 @@ def scrapeCourses(url,subject):
     soup = getpage(url,subject)
     courses = soup.find_all('td',{'width':'16%'})
     for course in courses:
-        number = course.text.split(" ")[1]
-        credit = course.text.split(" ")[-1]
-        numbers.append(number)
-        credits.append(credit)
+        try:
+            number = course.text.split()[1]
+            credit = course.text.split()[-1]
+            numbers.append(number)
+            credits.append(credit)
+        except:
+            numbers.append("none")
+            credits.append("none")
+
     print(numbers)
     print(credits)
     return numbers,credits
@@ -79,8 +99,11 @@ def scrapeTitles(url,subject):
     soup = getpage(url,subject)
     titles = soup.find_all('td', {'width': '24%'})
     for title in titles:
-        title = title.text
-        result.append(title)
+        try:
+            title = title.text
+            result.append(title)
+        except:
+            result.append("none")
     print(result)
     return result
     # return titles_
@@ -90,9 +113,12 @@ def scrapeDetails(url,subject):
     details = soup.find_all('td', {'width': '30%'})
     for detail in details:
         if detail.text:
-            href = detail.a['href']
-            href = f"https://w2prod.sis.yorku.ca/{href}"
-            result.append(href)
+            try:
+                href = detail.a['href']
+                href = f"https://w2prod.sis.yorku.ca/{href}"
+                result.append(href)
+            except:
+                result.append("none")
     print(result)
     return result
     # if details is None:
@@ -108,20 +134,13 @@ def getCourseRecords(url,subject):
         records.append(course_record)
         course_record.print()
     return records
-if __name__ == "__main__":
-    # records = getCourseRecords()
-    subject = input("int put your major(for example EECS): ")
-    # try:
+def getData(subject):
     url = geturl()
-    # getsubjectPopUp(url, subject)
-    # getpage(url, subject)
-    # scrapeSubject(url, subject)
-    # scrapeCourses(url, subject)
-    # scrapeTitles(url, subject)
-    scrapeDetails(url, subject)
-    getCourseRecords(url, subject)
-    # getCourseRecords(url,subject)
-    # except Exception:
-    #     print("Cannot find your major!")
+    scrapeDetails(url,subject)
+    return getCourseRecords(url,subject)
+
+if __name__ == "__main__":
+    getData(64)
+
 
 
