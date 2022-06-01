@@ -1,13 +1,21 @@
 import time
-
+import json
 import pymysql
 import scraping
-import requests
-from bs4 import BeautifulSoup
-connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='Ms_hdljd1lzsx',
-                             database='graderecord')
+
+
+# Opening JSON file
+f = open('db.json')
+
+# returns JSON object as
+# a dictionary
+data = json.load(f)
+connection = pymysql.connect(host=data["host"],
+                             user=data["user"],
+                             password=data["password"],
+                             database=data["database"],
+                             port=data["port"]
+                             )
 cursor = connection.cursor()
 def createTable():
         cursor.execute(f'CREATE TABLE courses( id BIGINT(7) NOT NULL AUTO_INCREMENT, '
@@ -33,7 +41,7 @@ def getCourseRecords(url,subject):
         connection.commit()
 def store():
     url = scraping.geturl()
-    for i in range(188, 209):
+    for i in range(0, 209):
         print(i)
         try:
             getCourseRecords(url,i)
@@ -46,6 +54,7 @@ def store():
 # AP/ASL  1000   6.00
 # A/ARTH 1000   3.00
 def test():
+    createTable()
     store()
 
 if __name__ == "__main__":
