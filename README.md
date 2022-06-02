@@ -12,3 +12,4 @@ create a new file json named db.json
 store your mysql host, username, password, port info in json file
 run store,py
 ```
+![Screenshot](./docs/result.jpg)
