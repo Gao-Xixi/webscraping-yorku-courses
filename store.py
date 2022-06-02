@@ -18,11 +18,11 @@ connection = pymysql.connect(host=data["host"],
                              )
 cursor = connection.cursor()
 def createTable():
-        cursor.execute(f'CREATE TABLE courses( id BIGINT(7) NOT NULL AUTO_INCREMENT, '
+        cursor.execute(f'CREATE TABLE Course( id BIGINT(7) NOT NULL AUTO_INCREMENT, '
                        f'subject VARCHAR (500), number VARCHAR(100), credit DOUBLE,'
                        f' title VARCHAR(500), detail VARCHAR(1000), PRIMARY KEY(id) );'
                        )
-        cursor.execute(f"ALTER TABLE `courses` ADD CONSTRAINT uniq UNIQUE (title);")
+        cursor.execute(f"ALTER TABLE `Course` ADD CONSTRAINT uniq UNIQUE (title);")
 def getCourseRecords(url,subject):
     subject_ = scraping.scrapeSubject(url,subject)
     numbers, credits = scraping.scrapeCourses(url,subject)
@@ -31,12 +31,12 @@ def getCourseRecords(url,subject):
     for i in range(len(numbers)):
         try:
             cursor.execute(
-                (f'INSERT IGNORE INTO courses (subject, number, credit, title, detail) VALUES ("{subject_}", "{numbers[i]}", "{credits[i]}", "{titles[i]}", "{details[i]}");')
+                (f'INSERT IGNORE INTO Course (subject, number, credit, title, detail) VALUES ("{subject_}", "{numbers[i]}", "{credits[i]}", "{titles[i]}", "{details[i]}");')
             )
         except:
             cursor.execute(
                 (
-                    f"INSERT IGNORE INTO courses (subject, number, credit, title, detail) VALUES ('{subject_}', '{numbers[i]}', '{credits[i]}', '{titles[i]}', '{details[i]}');")
+                    f"INSERT IGNORE INTO Course (subject, number, credit, title, detail) VALUES ('{subject_}', '{numbers[i]}', '{credits[i]}', '{titles[i]}', '{details[i]}');")
             )
         connection.commit()
 def store():
