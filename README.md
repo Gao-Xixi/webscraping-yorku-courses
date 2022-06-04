@@ -1,6 +1,7 @@
 # webscraping-yorku-courses
 Crawling through forms
-
+### Update
+Connected to AWS RDB MYSQL
 ### Difficuties
 
 - Url changes dynamiclly
