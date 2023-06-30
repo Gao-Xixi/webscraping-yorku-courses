@@ -1,7 +1,9 @@
 import time
 import json
+import random
+
 import pymysql
-import scraping
+import selenium_scraping as sc
 from threading import Thread, Lock
 from time import sleep, perf_counter
 # Opening JSON file
@@ -23,65 +25,67 @@ def createTable():
                        f' title VARCHAR(500), detail VARCHAR(1000), PRIMARY KEY(id) );'
                        )
         cursor.execute(f"ALTER TABLE `course` ADD CONSTRAINT uniq UNIQUE (title);")
-def getCourseRecords(url,subject):
-    subject_ = scraping.scrapeSubject(url,subject)
-    numbers, credits = scraping.scrapeCourses(url,subject)
-    titles = scraping.scrapeTitles(url,subject)
-    details = scraping.scrapeDetails(url,subject)
-    for i in range(len(numbers)):
-        try:
-            cursor.execute(
-                (f'INSERT IGNORE INTO course (subject, number, credit, title, detail) VALUES ("{subject_}", "{numbers[i]}", "{credits[i]}", "{titles[i]}", "{details[i]}");')
-            )
-        except:
-            cursor.execute(
-                (
-                    f"INSERT IGNORE INTO course (subject, number, credit, title, detail) VALUES ('{subject_}', '{numbers[i]}', '{credits[i]}', '{titles[i]}', '{details[i]}');")
-            )
-        connection.commit()
-def store_record(i):
-    url = scraping.geturl()
+def insertCourseRecords(record):
+    print(record.subject)
+
+    try:
+        cursor.execute(
+            (f'INSERT IGNORE INTO course (subject, number, credit, title, detail) VALUES ("{record.subject}", "{record.number}", "{record.credit}", "{record.title}", "{record.detail}");')
+        )
+    except:
+        cursor.execute(
+            (
+                f"INSERT IGNORE INTO course (subject, number, credit, title, detail) VALUES ('{record.subject}', '{record.number}', '{record.credit}', '{record.title}', '{record.detail}');")
+        )
+    connection.commit()
+def store_record(record):
+
     lock = Lock()
     lock.acquire()
     try:
-        getCourseRecords(url, i)
+        insertCourseRecords(record)
         time.sleep(5)
     except:
-        getCourseRecords(url, i + 1)
+        print(record)
         time.sleep(5)
     lock.release()
-
-def store(start, end):
-    url = scraping.geturl()
+#
+def store(records, start, end):
     for i in range(start, end):
-        print(i)
-        store_record(i)
+        store_record(records[i])
     # connection.close()
     # cursor.close()
-# AP/ASL  1000   6.00
-# A/ARTH 1000   3.00
+# # AP/ASL  1000   6.00
+# # A/ARTH 1000   3.00
+#
+#
+def run():
+    records = sc.get_page_source()
+    print(records)
+    for record in records:
+        print('insert')
+        print(record)
+        insertCourseRecords(record)
 
-def safe_store(start, end, lock):
-
-    store(start,end)
-
-
-def test():
-    lock = Lock()
-    thread1 = Thread(target=store, args=(85, 100))
-    thread2 = Thread(target=store, args=(100, 150))
-    thread3 = Thread(target=store, args=(150, 200))
-    thread4 = Thread(target=store, args=(200, 209))
-    threads = [thread1, thread2, thread3, thread4]
-
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+    # thread_len = 4
+    # threads = []
+    # records = sc.get_page_source()
+    # print(len(records))
+    # list1 = [random.randint(1, len(records)) for _ in range(thread_len - 1)]
+    # list1.append(0)
+    # list1.append(len(records) - 1)
+    # list1.sort()
+    #
+    # for i in range(thread_len - 1):
+    #     thread = Thread(target=store, args=(records, list1[i], list1[i + 1]))
+    #     threads.append(thread)
+    #
+    # for thread in threads:
+    #     thread.start()
+    # for thread in threads:
+    #     thread.join()
 
 if __name__ == "__main__":
     # createTable()
-    # test()
-    store(85, 209)
+    run()
     connection.close()
-    cursor.close()

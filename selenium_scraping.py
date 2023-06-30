@@ -19,14 +19,17 @@ class CourseRecord:
         print(f'Detail: {self.detail}')
 PATH = "/Users/smallcrop/Desktop/GITHUB REPO/chromedriver"
 def get_page_source():
-
+    result = []
     driver = webdriver.Chrome(PATH)
 
     driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm")
     # first page
-    driver.find_element(By.LINK_TEXT, "Subject").click()
-    time.sleep(2)
+
     try:
+        element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.LINK_TEXT, "Subject"))
+        )
+        driver.find_element(By.LINK_TEXT, "Subject").click()
         element = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, "subjectSelect"))
         )
@@ -34,7 +37,8 @@ def get_page_source():
         subjects = driver.find_elements(By.CSS_SELECTOR, '#subjectSelect > option')
         num_of_options = len(subjects)
         print(num_of_options)
-        for i in range(0, num_of_options):
+        for i in range(0, 1):
+        # for i in range(0, num_of_options):
             subjects = driver.find_elements(By.CSS_SELECTOR, '#subjectSelect > option')
             subjects[i].click()
             #  Search course button
@@ -51,7 +55,7 @@ def get_page_source():
 
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'lxml')
-            getCourseRecords(soup)
+            result += getCourseRecords(soup)
 
             time.sleep(5)
 
@@ -61,6 +65,7 @@ def get_page_source():
             # first page
             driver.find_element(By.LINK_TEXT, "Subject").click()
             time.sleep(2)
+        return result
     finally:
         driver.quit()
 
