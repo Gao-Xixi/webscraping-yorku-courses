@@ -1,8 +1,9 @@
 # webscraping-yorku-courses
 Crawling through forms
 ### Update 2023.6.26
+AWS DB expired, connect to local db
 ### Issue
-- [ ] [https://github.com/Gao-Xixi/webscraping-yorku-courses/issues/1]
+- [X] [https://github.com/Gao-Xixi/webscraping-yorku-courses/issues/1]
 > The previous code does not work because of the complex and dynamic generated url. 
 > Selenium library now is used to solve this problem
 ### Update
