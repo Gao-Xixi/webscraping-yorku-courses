@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from threading import Thread, Lock
 
 class CourseRecord:
     def __init__(self,subject, number, credit, title, detail):
@@ -18,7 +19,7 @@ class CourseRecord:
         print(f'Title: {self.title}')
         print(f'Detail: {self.detail}')
 PATH = "/Users/smallcrop/Desktop/GITHUB REPO/chromedriver"
-def get_page_source():
+def get_page_source(start, end):
     result = []
     driver = webdriver.Chrome(PATH)
 
@@ -37,7 +38,7 @@ def get_page_source():
         subjects = driver.find_elements(By.CSS_SELECTOR, '#subjectSelect > option')
         num_of_options = len(subjects)
         print(num_of_options)
-        for i in range(0, 1):
+        for i in range(start, end):
         # for i in range(0, num_of_options):
             subjects = driver.find_elements(By.CSS_SELECTOR, '#subjectSelect > option')
             subjects[i].click()
@@ -50,26 +51,33 @@ def get_page_source():
             # get_url = driver.current_url
             #
             # print("The current url is:" + str(get_url))
-
-            time.sleep(10)
-
+            time.sleep(5)
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'lxml')
             result += getCourseRecords(soup)
 
             time.sleep(5)
-
-
-            # find next url from beginning
-            driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm")
-            # first page
-            driver.find_element(By.LINK_TEXT, "Subject").click()
-            time.sleep(2)
+            # Navigate back
+            driver.back()
+            # # find next url from beginning
+            # driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm")
+            # # first page
+            # driver.find_element(By.LINK_TEXT, "Subject").click()
+            # time.sleep(2)
         return result
     finally:
         driver.quit()
 
+def scrape_range(start, end):
 
+    lock = Lock()
+    lock.acquire()
+    try:
+        get_page_source(start,end)
+        time.sleep(5)
+    except:
+        time.sleep(5)
+    lock.release()
 
 def scrapeSubject(soup):
     sub = soup.find('td',{'width':'16%'}).text
@@ -132,6 +140,19 @@ def getCourseRecords(soup):
         course_record.print()
     return records
 
-
+# def run():
+    # lock for loop, not work ,only one thread works
+    # for i in range(thread_len - 1):
+    # thread1 = Thread(target=scrape_range, args=(0, 50))
+    # thread2 = Thread(target=scrape_range, args=(50, 100))
+    # thread3 = Thread(target=scrape_range, args=(100, 150))
+    # thread4 = Thread(target=scrape_range, args=(150, 207))
+    # threads= [thread1, thread2,thread3,thread4]
+    #
+    # for thread in threads:
+    #     thread.start()
+    # for thread in threads:
+    #     thread.join()
 if __name__ == "__main__":
-    get_page_source()
+    # run()
+    get_page_source(0,2)
